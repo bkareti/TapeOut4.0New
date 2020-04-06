@@ -1,0 +1,421 @@
+<template>
+    <!--DRC information Tab-->
+    <!-- <lightning-card title="DRC Information Edit"> -->
+    <template if:true={isLabelsLoaded}>
+        <div>
+            <template if:true={drcOptionFieldVisible}>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div
+                        class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                        {fieldLabels.DRC_option__c.Label__c}<lightning-helptext
+                            content={fieldLabels.DRC_option__c.HelpText__c}></lightning-helptext>:
+                    </div>
+                    <div class="slds-size_6-of-12 slds-p-right_large">
+                        <template if:true={displayDRCOptionValOnly}>
+                            {drcOptionValue}
+                        </template>
+                        <template if:false={displayDRCOptionValOnly}>
+                            <lightning-combobox name="DRC_option__c" label="DRC option" value={drcOptionValue}
+                                options={drcOptionFieldOptions} onchange={handleDrcOption} variant="label-hidden"
+                                required message-when-value-missing={fieldLabels.DRC_option__c.RequiredErrorMessage__c}>
+                            </lightning-combobox>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            <template if:true={DRCConfigurationsFieldVisible}>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div
+                        class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                        {fieldLabels.DRC_Configurations__c.Label__c}<lightning-helptext
+                            content={fieldLabels.DRC_Configurations__c.HelpText__c}></lightning-helptext>:
+                    </div>
+                    <div class="slds-size_6-of-12 slds-p-right_large">
+                        <!--DRC Configuration table-->
+                        <table class="total-table">
+                            <thead>
+                                <tr class="headbg">
+                                    <th scope="col">
+                                        <div title="Key">Configuration Type</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div title="Value"></div>
+                                    </th>
+                                    <th scope="col">
+                                        <div title="Value">Configuration Options</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={drcConfigurationsTableData.listOfConfigTables} for:item="item"
+                                    for:index="index">
+                                    <tr key={item.ctId}>
+                                        <td data-record={index}>
+                                            <div>{item.ctMasterConfigName}</div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <lightning-helptext content={item.ctRemarks}></lightning-helptext>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select class="dis" data-record={index} onchange={handleDRCConfigurations}>
+                                                <template for:each={item.listOfOptions} for:item="Option">
+                                                    <option key={Option.optName} value={Option.optName}
+                                                        selected={Option.default}>{Option.optName}</option>
+                                                </template>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+            <template if:true={ShowWaiversForAnyDRCRuleViolations}>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div
+                        class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                        {fieldLabels.Waivers_for_any_DRC_rule_violations__c.Label__c}<lightning-helptext
+                            content={fieldLabels.Waivers_for_any_DRC_rule_violations__c.HelpText__c}>
+                        </lightning-helptext>:
+                    </div>
+                    <div class="slds-size_6-of-12 slds-p-right_large">
+                        <lightning-combobox name="Waivers_for_any_DRC_rule_violations__c"
+                            label="Will you require waivers for any DRC rule violations?" value={drcRuleViolationValue}
+                            options={drcRuleViolationOptions} onchange={handleDRCRuleViolation} variant="label-hidden"
+                            style="display:inline;" required
+                            message-when-value-missing={fieldLabels.Waivers_for_any_DRC_rule_violations__c.RequiredErrorMessage__c}>
+                        </lightning-combobox>
+                        <template if:true={drcRuleViolationNoteVisible}>
+                            <div
+                                style="color: rgb(194, 57, 52);font-size:0.7rem; width: 63%;float: left;margin-left: 10px;">
+                                {fieldLabels.Waivers_for_any_DRC_rule_violations__c.WarningMessage__c}
+                            </div>
+                        </template>
+                        <template if:false={drcRuleViolationNoteVisible}>
+                            <div
+                                style="color: rgb(194, 57, 52);font-size:0.7rem; width: 63%;float: left;margin-left: 10px;">
+                                {fieldLabels.Waivers_for_any_DRC_rule_violations__c.Warning_Message2__c}
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            <template if:true={showDRCReportField}>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div
+                        class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                        {fieldLabels.DRC_Report__c.Label__c}<lightning-helptext
+                            content={fieldLabels.DRC_Report__c.HelpText__c}></lightning-helptext>:
+                    </div>
+                    <div class="slds-size_6-of-12 slds-p-right_large">
+                        <c-to-f-r-t-f-file-upload class="label-hide1" record-id={ftrfServiceFormId}
+                            accepted-formats={fieldLabels.DRC_Report__c.AcceptedFileFormats__c}
+                            onfileuploadcustom={handleDRCReportUpload}
+                            is-multiple={fieldLabels.DRC_Report__c.IsFileUploadMultiple__c}
+                            is-required={fieldLabels.DRC_Report__c.IsFileUploadRequired__c} file-ids={drcReportFiles}
+                            field-name={fieldLabels.DRC_Report__c.Label__c}>
+                        </c-to-f-r-t-f-file-upload>
+                    </div>
+                </div>
+            </template>
+            <template if:true={ShowIsSevAViolationPresentField}>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div
+                        class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                        {fieldLabels.Is_SevA_violation_present__c.Label__c}<lightning-helptext
+                            content={fieldLabels.Is_SevA_violation_present__c.HelpText__c}></lightning-helptext>:
+                    </div>
+                    <div class="slds-list_horizontal slds-size_6-of-12 slds-p-right_large">
+                        <lightning-radio-group name="Is_SevA_violation_present__c"
+                            label="Does your design contain Sev A violation?" options={yesNoOptions}
+                            value={SevAViolationValue} type="radio" variant="label-hidden"
+                            onchange={handleSevAViolationFiled} class="customRadioCls radio-fix1"
+                            message-when-value-missing={fieldLabels.Is_SevA_violation_present__c.RequiredErrorMessage__c}>
+                        </lightning-radio-group>
+                    </div>
+                </div>
+            </template>
+            <template if:true={showGetTRVerificationCheck}>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div
+                        class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                        {fieldLabels.Check_with_GF_violations_not_fixable__c.Label__c}<lightning-helptext
+                            content={fieldLabels.Check_with_GF_violations_not_fixable__c.HelpText__c}>
+                        </lightning-helptext>:
+                    </div>
+
+                    <div class="slds-size_6-of-12 slds-p-right_large">
+                        <lightning-radio-group name="Check_with_GF_violations_not_fixable__c"
+                            label="Does your design contain Sev A violation?" options={yesNoOptions}
+                            value={gfTRVerificationValue} type="radio" variant="label-hidden" class="radio-fix1"
+                            onchange={handlegfTRVerificationCheck}
+                            message-when-value-missing={fieldLabels.Check_with_GF_violations_not_fixable__c.RequiredErrorMessage__c}>
+                        </lightning-radio-group>
+                    </div>
+                </div>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right"
+                        style="font-weight: bold;color: rgb(194, 57, 52); font-size:0.7rem">
+                        {fieldLabels.Check_with_GF_violations_not_fixable__c.DisplayNote__c}
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={showCaseNumberField}>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div
+                        class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                        {fieldLabels.CASE_Number__c.Label__c}<lightning-helptext
+                            content={fieldLabels.CASE_Number__c.HelpText__c}></lightning-helptext>:
+                    </div>
+                    <template if:true={isOnlyCaseFound}>
+                        {caseNumberValue}
+                    </template>
+                    <template if:false={isOnlyCaseFound}>
+                        <div class="slds-size_6-of-12 slds-p-right_large">
+                            <lightning-combobox name="CASE_Number__c" label="CASE Number" value={caseNumberValue}
+                                options={caseNumberOptions} onchange={handleCaseNumberField} variant="label-hidden"
+                                required
+                                message-when-value-missing={fieldLabels.CASE_Number__c.RequiredErrorMessage__c}>
+                            </lightning-combobox>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template if:true={showGetTRVerificationCheck}>
+                <template if:true={showCaseNumberOtherField}>
+                    <div class="slds-grid slds-p-vertical_xx-small">
+                        <div
+                            class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                            {fieldLabels.CASE_Number_Others__c.Label__c}<lightning-helptext
+                                content={fieldLabels.CASE_Number_Others__c.HelpText__c}></lightning-helptext>:
+                        </div>
+                        <div class="slds-size_6-of-12 slds-p-right_large">
+                            <lightning-input type="text" label="Case Number (Other)" value={caseNumberOtherFieldValue}
+                                onchange={handleCaseNumberOtherField} variant="label-hidden" required
+                                message-when-value-missing={fieldLabels.CASE_Number_Others__c.RequiredErrorMessage__c}>
+                            </lightning-input>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template if:true={showDRCWaiverRequestInformation}>
+                <h3 class="slds-text_bold slds-p-vertical_xx-small fsize-12">DRC Waiver Request Information</h3>
+                <div class="slds-grid slds-p-vertical_xx-small">
+                    <div
+                        class="slds-size_6-of-12 slds-p-right_x-small slds-text-body_small slds-text_bold slds-text-align_right">
+                        {fieldLabels.Rules_to_Review__c.Label__c}<lightning-helptext
+                            content={fieldLabels.Rules_to_Review__c.HelpText__c}></lightning-helptext>:
+                    </div>
+                    <div class="slds-list_horizontal slds-size_6-of-12 slds-p-right_large">
+                        <lightning-radio-group name="Rules_to_Review__c" label="Rules to Review"
+                            options={rulesToReviewOptions} value={rulesToReviewValue} type="radio"
+                            variant="label-hidden" onchange={handleRulesToReview} class="customRadioCls radio-fix1"
+                            message-when-value-missing={fieldLabels.Rules_to_Review__c.RequiredErrorMessage__c}>
+                        </lightning-radio-group>
+                        <template if:true={rulesToReviewNoteVisible}>
+                            <div style="    color: rgb(194, 57, 52);font-size:0.7rem">
+                                {fieldLabels.Rules_to_Review__c.WarningMessage__c}
+                            </div>
+                        </template>
+                        <template if:false={rulesToReviewNoteVisible}>
+                            <div style="color: rgb(194, 57, 52); font-size:0.7rem">
+                                {fieldLabels.Rules_to_Review__c.Warning_Message2__c}
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            <template if:true={showDRCWaiverRequestRulesTable}>
+                <h3 class="slds-text_bold slds-p-vertical_xx-small fsize-12">DRC Waiver Request Rules Table
+                   
+                </h3>
+                <!--RC Waiver Request Rules Header acction buttons-->
+                <div>
+                    <a href={csvTamplateUrl}>Sample CSV Template to import DRC Rules</a>
+                </div>
+                <lightning-button-group class="slds-p-vertical_xx-small slds-m-bottom_medium">
+                    <lightning-button label="Add" icon-name="utility:add" onclick={handleAddDRCWRRule}>
+                    </lightning-button>
+                    <lightning-button label="Delete" icon-name="utility:delete" onclick={handleDeleteDRCWRRule}>
+                    </lightning-button>
+                    <lightning-button label="Copy" icon-name="utility:copy" onclick={handleCopyDRCWRRule}>
+                    </lightning-button>
+                    <lightning-button label="Import CSV" icon-name="utility:download" onclick={handleimportCSVButton}>
+                    </lightning-button>
+                    <!-- <lightning-helptext icon-name="utility:help" variant="inverse" content='Help text'>
+                    </lightning-helptext> -->
+                    <lightning-button label="Import from Past Requests" icon-name="utility:download" onclick={handleImportPastRules}></lightning-button>
+                </lightning-button-group>
+                <!--RC Waiver Request Rules Table-->
+                <table class="total-table">
+                    <thead>
+                        <tr class="headbg">
+
+                            <th scope="col" style="width:6%">
+                                <div title="Key">Select</div>
+                            </th>
+                            <th scope="col" style="width:18%">
+                                <div title="Value">Chip Name</div>
+                            </th>
+                            <th scope="col" style="width:20%">
+                                <div title="Value">DRC Deck Rule Name</div>
+                            </th>
+                            <th scope="col">
+                                <div title="Value">Comment (Reason for Waiver Request)</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={drcRequestRules} for:item="item" for:index="index">
+                            <tr key={item}>
+                                <td>
+                                    <lightning-input type="checkbox" data-record={index} name="select"
+                                        onchange={handleCheckBox}></lightning-input>
+                                </td>
+                                <td>
+                                    <lightning-combobox name="ChipName" label="chip Name" options={chipOptions}
+                                        onchange={handleChipNameinRuleTable} variant="label-hidden" data-record={index}
+                                        value={item.TO_FTRF_Chip__c} required
+                                        message-when-value-missing="Please Input this field">
+                                    </lightning-combobox>
+                                </td>
+                                <td>
+                                    <lightning-input type="text" name="DRCDeckRuleName" maxlength="255" required
+                                        variant="label-hidden" value={item.DRC_Deck_Rule_Name__c}
+                                        onchange={hadleDRCDeckRuleName} data-record={index}
+                                        message-when-value-missing="Please Input this field">
+                                    </lightning-input>
+                                </td>
+                                <td class="big-textarea1">
+                                    <lightning-textarea name="Comment (Reason for Waiver Request)"
+                                        label="Comment (Reason for Waiver Request)" maxlength="400"
+                                        message-when-too-long="A maximum of 400 characters are allowed."
+                                        message-when-value-missing="Please complete this field." variant="label-hidden"
+                                        required value={item.Comment_Reason_for_Waiver_Request__c} data-record={index}
+                                        onchange={hadleDRCDeckRuleComment}
+                                        >
+                                    </lightning-textarea>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+            <!--Impoert CSV Modal Window-->
+            <template if:true={importCSVModal}>
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                    aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <lightning-button-icon class="slds-modal__close close-iconfix" style="right:1rem"
+                                title="Close" icon-name="utility:close" icon-class="slds-button_icon-inverse"
+                                onclick={handleCancelImport}>
+                            </lightning-button-icon>
+
+                            <!--modal window header-->
+                            <h2 class="slds-text-heading_medium slds-hyphenate header-string">
+                                Import CSV File here
+                            </h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                            <slot></slot>
+                            Note:
+                            <ul class="slds-list_dotted" style="list-style-type: square">
+                                <li>Please only attach CSV file format. The CSV template can be downloaded at <a
+                                        href={csvTamplateUrl} target="_self">DRC Waiver Request Rules CSV File
+                                        template</a>.</li>
+                                <li>Do not attach file larger than 50MB. Attaching file larger than 50MB may take longer
+                                    time and possible error out.</li>
+                                <li>Please check the following for acceptable CSV content:
+                                    <ul class="slds-is-nested slds-list_dotted" style="list-style-type: circle">
+                                        <li>Only 3 columns with column headers are allowed, namely: Chip Name, DRC Deck
+                                            Rule Name, Comment</li>
+                                        <li>Chip Name must be a selected Prime Die Name or Scribeline Dropin Name found
+                                            in Tapeout Service Form – Database Information section</li>
+                                        <li>DRC Deck Rule Name cannot exceed 255 characters</li>
+                                        <li>Comment cannot exceed 255 characters</li>
+                                        <li>Only ASCII printable characters are allowed</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <div class="slds-grid slds-m-top_medium">
+
+                                <div class="">
+                                    <lightning-input type="file" name="importCSV" label="Import CSV File"
+                                        accept={acceptedFormats} onchange={hanldeFileUpload}
+                                        message-when-type-mismatch="Please select .csv files only">
+                                    </lightning-input>
+                                    {csvFileName}
+                                    <template if:true={showImportCSVFileError}>
+                                        <div style="color: red">{fieldLabels.ImportCSV_File.CondErrorMsg1__c}</div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <footer class="slds-modal__footer border-t0">
+                            <lightning-button name="Cancel" label="Cancel" onclick={handleCancelImport}
+                                class="orange-btn">
+                            </lightning-button>
+                            <lightning-button name="Import" label="Import" onclick={handleImportCSVFileToRulesTable}
+                                variant="Brand" class="orange-btn">
+                            </lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+
+            </template>
+
+            <!--Warning before import-->
+            <template if:true={importCSVWarning}>
+                <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                    aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <header class="slds-modal__header">
+                            <lightning-button-icon class="slds-modal__close close-iconfix" title="Close" size="small"
+                                icon-name="utility:close" icon-class="slds-button_icon-inverse"
+                                onclick={handleCancelImportWarning}></lightning-button-icon>
+                            <!--Warning modal window header-->
+                            <h2 class="slds-modal__title slds-hyphenate">
+                                <lightning-icon icon-name="utility:warning" alternative-text="Warning!"
+                                    variant="warning"> </lightning-icon>
+                                WARNING!
+                            </h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <ul> {fieldLabels.ImportCSV_File.WarningMessage__c} </ul>
+                        </div>
+                        <footer class="slds-modal__footer border-t0">
+                            <lightning-button name="Cancel" label="Cancel" onclick={handleCancelImportWarning}
+                                class="orange-btn">
+                            </lightning-button> &nbsp;
+                            <lightning-button name="Proceed" label="Proceed" onclick={handleProceedImportWarning}
+                                variant="Brand" class="orange-btn">
+                            </lightning-button>
+                        </footer>
+                    </div>
+                </section>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+        </div>
+        <!--import past DRC rules Select Chips table-->
+        <div>
+        <template if:true={isImportdrcRulesClicked}>
+            <c-to-ftrf-import-drc-rules
+              ftrf-id='aM3O00000004CSFKA2'
+              onclosemodal={handleAddChipsCloseModal}
+              chip-options={chipOptions}
+              onhandlechips={handleSelectedChips}
+              
+            ></c-to-ftrf-import-drc-rules>
+        </template>
+        </div>
+
+    </template>
+    <!-- </lightning-card> -->
+</template>

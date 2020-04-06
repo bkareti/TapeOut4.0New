@@ -1,0 +1,16 @@
+.orange-btn button{text-transform: uppercase;background-color: #f47735; border: 0; color: #fff; padding: 7px 23px; margin-right: 10px;}
+.orange-btn button:hover, .orange-btn button:focus, .orange-btn button:active{background:rgba(244, 119, 53, 0.92); color:#fff;}
+.button-right{display: block; clear: both; width: 100%; text-align: right;}
+
+/*.THIS.customRadioCls .slds-form-element__control .slds-radio{
+    display : inline-block !important;
+} */
+.THIS.customRadioCls .slds-form-element__control .slds-checkbox{
+    display : inline-block !important;
+}
+
+.dis option{
+   
+    font-size: 0.7rem;
+    height: none;
+     }
